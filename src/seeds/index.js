@@ -52,7 +52,10 @@ const runSeeders = async () => {
     console.log('All seeds completed successfully');
     
     // In Railway, don't exit the process after seeding if running with the railway script
-    if (!process.env.RAILWAY) {
+    if (process.env.RAILWAY_SERVICE_NAME || process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY) {
+      console.log('Running in Railway environment, continuing execution...');
+    } else {
+      console.log('Not running in Railway, exiting after seed...');
       process.exit(0);
     }
   } catch (error) {

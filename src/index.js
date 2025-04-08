@@ -15,7 +15,7 @@ console.log(`Starting server in ${process.env.NODE_ENV || 'development'} mode`);
 app.use(cors({
   // In production, restrict origins to your frontend domain
   origin: process.env.NODE_ENV === 'production'
-    ? process.env.CORS_ORIGIN || 'https://clickapp-production.up.railway.app'
+    ? process.env.CORS_ORIGIN || '*'
     : '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -77,9 +77,17 @@ const startServer = async () => {
       }
     }
     
-    // Sync models with database - never alter in production
-    await sequelize.sync({ alter: false });
-    console.log('Database synced successfully');
+    // Check if we're running in Railway with the railway script
+    // If so, the database was already synced by the seed script
+    const skipSync = process.env.RAILWAY === 'true';
+    
+    if (skipSync) {
+      console.log('Skipping database sync as it was already done by the seed script');
+    } else {
+      // Sync models with database
+      await sequelize.sync({ alter: process.env.NODE_ENV !== 'production' });
+      console.log('Database synced successfully');
+    }
     
     // Start server
     const server = app.listen(PORT, () => {
