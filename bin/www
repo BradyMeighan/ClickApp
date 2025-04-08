@@ -1,0 +1,7 @@
+#!/usr/bin/env node
+
+/**
+ * Railway deployment entry point
+ */
+
+const app = require('../src/index'); 
