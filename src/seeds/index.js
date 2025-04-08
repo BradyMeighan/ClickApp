@@ -43,6 +43,13 @@ const runSeeders = async () => {
       : { force: true }; // Drop and recreate in development
     
     console.log(`Syncing database with options: ${JSON.stringify(syncOptions)}`);
+    
+    // First clear UserAchievements if we're forcing a reset
+    if (syncOptions.force) {
+      console.log('Clearing UserAchievements table...');
+      await sequelize.query('DELETE FROM "UserAchievements"');
+    }
+    
     await sequelize.sync(syncOptions);
     console.log('Database synced successfully');
     
