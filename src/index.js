@@ -15,7 +15,7 @@ console.log(`Starting server in ${process.env.NODE_ENV || 'development'} mode`);
 app.use(cors({
   // In production, restrict origins to your frontend domain
   origin: process.env.NODE_ENV === 'production'
-    ? process.env.CORS_ORIGIN || '*'
+    ? process.env.CORS_ORIGIN || 'https://clickapp-production.up.railway.app'
     : '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -60,12 +60,25 @@ app.use((err, req, res, next) => {
 // Sync database and start server
 const startServer = async () => {
   try {
-    // Test database connection
-    await sequelize.authenticate();
-    console.log('Database connection has been established successfully.');
+    // Test database connection with retries
+    let retries = 5;
+    while (retries > 0) {
+      try {
+        await sequelize.authenticate();
+        console.log('Database connection has been established successfully.');
+        break;
+      } catch (error) {
+        retries--;
+        if (retries === 0) {
+          throw error;
+        }
+        console.log(`Database connection failed. Retrying in 3 seconds... (${retries} retries left)`);
+        await new Promise(resolve => setTimeout(resolve, 3000));
+      }
+    }
     
-    // Sync models with database
-    await sequelize.sync();
+    // Sync models with database - never alter in production
+    await sequelize.sync({ alter: false });
     console.log('Database synced successfully');
     
     // Start server

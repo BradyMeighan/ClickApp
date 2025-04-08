@@ -52,7 +52,7 @@ const runSeeders = async () => {
     console.log('All seeds completed successfully');
     
     // In Railway, don't exit the process after seeding if running with the railway script
-    if (!process.env.RAILWAY_STATIC_URL) {
+    if (!process.env.RAILWAY) {
       process.exit(0);
     }
   } catch (error) {
